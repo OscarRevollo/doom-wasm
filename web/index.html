@@ -1,16 +1,13 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Doom Wasm</title>
-    <meta
-      name="description"
-      content="Play a browser build of Chocolate Doom with Freedoom by default, or load your own IWAD/WAD."
-    />
+    <title>Freedoom 2</title>
+    <meta name="description" content="Bundled Freedoom 2, playable in an iframe." />
   </head>
   <body>
-    <div id="app"></div>
+    <canvas id="doom-canvas" width="320" height="200" tabindex="0" aria-label="Freedoom 2 game"></canvas>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

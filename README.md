@@ -1,10 +1,10 @@
 # Doom Wasm
 
-Browser-playable Chocolate Doom compiled to WebAssembly, with `freedoom2.wad` bundled as the default redistributable IWAD. Users can also load their own IWAD/WAD files at runtime. No proprietary Doom data is included in this repository.
+Browser-playable Chocolate Doom compiled to WebAssembly, with `freedoom2.wad` bundled as the default redistributable IWAD. The page contains only a full-viewport canvas and starts automatically after the bundled assets load. No proprietary Doom data is included in this repository.
 
 ## What This Repo Is For
 
-- Primary use: clone it, run it locally, click `Play`, and test the game in the browser.
+- Primary use: embed the page in an iframe; bundled Freedoom 2 starts automatically.
 - Advanced use: rebuild the Doom engine itself as WebAssembly after engine-side changes.
 
 If you only want to play or test the project locally, you usually do not need to care about `build:wasm`.
@@ -31,28 +31,50 @@ npm run dev
 Then:
 
 1. Open the local URL printed by Vite.
-2. Click `Play`.
-3. The game starts with bundled `freedoom2.wad`.
+2. Wait for the bundled assets to load; the game starts automatically.
+3. Click the canvas to focus input and enable audio if required by the browser.
 
 The prebuilt browser engine files under `web/public/engine/` are intentionally committed so a fresh clone can run without rebuilding the engine.
 
 ## Controls
 
-- Arrow keys: move
+- WASD or arrow keys: move forward/backward and turn (W/S or Up/Down; A/D or Left/Right)
 - `Ctrl`: fire
 - `Space`: use / open
 - `Shift`: run
-- Optional: pointer lock and fullscreen are available in the UI
+- Click the canvas: focus keyboard input and resume audio
+- The cursor remains visible and free to leave the iframe; gameplay uses the keyboard.
 
-## Loading Your Own IWAD or WAD
+## Local iframe test
 
-- By default the project starts with bundled Freedoom.
-- You can upload your own game data from the UI.
-- `Custom IWAD` replaces the default IWAD.
-- `Add-on WAD(s)` keeps Freedoom as the base and appends extra WAD files.
-- You must own the original game data if you use proprietary IWADs or WADs.
+Run `npm run dev`, then serve this HTML from a separate local page (for example, save it as `iframe-test.html` in a temporary folder and run `python -m http.server 8080` there). Open `http://localhost:8080/iframe-test.html`:
 
-Uploaded files are used in the browser session. They should not be added to this repository.
+```html
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Freedoom iframe test</title>
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: black; }
+  iframe { display: block; width: 100vw; height: 100vh; border: 0; }
+</style>
+<iframe
+  src="http://127.0.0.1:5173/"
+  title="Freedoom 2"
+  allow="autoplay"
+  sandbox="allow-scripts allow-same-origin"
+></iframe>
+</html>
+```
+
+Use the URL printed by Vite if it chooses another port. The sandbox is optional; if used, it must permit scripts and same-origin access for asset loading. Production hosting must also allow framing (no conflicting `X-Frame-Options` or CSP `frame-ancestors` policy).
+
+Check that the game appears without pressing Play, the frame resizes without scrollbars, and clicking inside enables keyboard input. Audio may require a click or key press inside the frame even with `allow="autoplay"`. Move the cursor outside the frame and click the chat to continue typing there. There are no touch controls.
+
+For a production test, run `npm run build` followed by `npm run preview` and change the iframe URL to the preview URL (normally `http://127.0.0.1:4173/`).
+
+Only bundled Freedoom is loaded. There is no upload flow, custom IWAD selection, or pointer capture. Diagnostics go to the browser console; savegames remain in memory for the current session.
 
 ## Commands
 
@@ -99,7 +121,7 @@ It intentionally keeps the tracked `web/public/engine/` bundle.
 
 ## Project Layout
 
-- `web/`: Vite frontend, canvas UI, controls, upload flow, fullscreen, pointer lock, runtime log
+- `web/`: minimal Vite embed, automatic startup, keyboard input and audio
 - `engine/`: vendored Chocolate Doom source, default Freedoom asset, build scripts
 - `licenses/`: license texts and attribution notices
 
@@ -182,16 +204,10 @@ export PYTHONPATH="$(find "$PWD/.tooling/lib" -maxdepth 3 -type d -name site-pac
 
 Then rerun `npm run build:wasm`.
 
-### The engine starts but custom files are ignored
-
-- Use the `Interpret uploads as` selector in the UI.
-- `Custom IWAD` uses the first uploaded file as `-iwad`.
-- `Add-on WAD(s)` keeps `freedoom2.wad` as the base game.
-
 ### Browser keyboard input is missing
 
 - Click inside the canvas after launch.
-- If pointer lock is active, press `Esc` to release it.
+- Click outside the iframe to return focus to the chat.
 
 ## GitHub and Repo Hygiene
 
